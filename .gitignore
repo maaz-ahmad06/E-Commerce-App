@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production build outputs
+dist/
+*/dist/
+
+# Environment files and credentials
+.env
+.env.*
+*.env
+backend/.env
+frontend/.env
+admin/.env
+
+# Allow example files
+!.env.example
+!*/.env.example
+
+# Logs and OS files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
