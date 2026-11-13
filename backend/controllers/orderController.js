@@ -1,5 +1,6 @@
 import orderModel from '../models/orderModel.js'
 import userModel from '../models/userModel.js';
+import productModel from '../models/productModel.js';
 import Stripe from 'stripe'
 
 // global variables
@@ -13,11 +14,30 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 const placeOrder = async (req, res) => {
     try {
         const {userId, items, amount, address} = req.body;
+
+        let calculatedAmount = 0;
+        const verifiedItems = [];
+        for (const item of items) {
+            const product = await productModel.findById(item._id);
+            if (product) {
+                calculatedAmount += product.price * item.quantity;
+                verifiedItems.push({
+                    ...item,
+                    price: product.price,
+                    name: product.name
+                });
+            } else {
+                verifiedItems.push(item);
+                calculatedAmount += (item.price || 0) * (item.quantity || 1);
+            }
+        }
+        calculatedAmount += deliveryCharge;
+
         const orderData = {
             userId,
-            items,
+            items: verifiedItems,
             address,
-            amount,
+            amount: calculatedAmount,
             paymentMethod: "COD",
             payment: false,
             date: Date.now()
@@ -38,11 +58,30 @@ const placeOrderStripe = async (req, res) => {
     try {
         const {userId, items, amount, address} = req.body;
         const {origin} = req.headers;
+
+        let calculatedAmount = 0;
+        const verifiedItems = [];
+        for (const item of items) {
+            const product = await productModel.findById(item._id);
+            if (product) {
+                calculatedAmount += product.price * item.quantity;
+                verifiedItems.push({
+                    ...item,
+                    price: product.price,
+                    name: product.name
+                });
+            } else {
+                verifiedItems.push(item);
+                calculatedAmount += (item.price || 0) * (item.quantity || 1);
+            }
+        }
+        calculatedAmount += deliveryCharge;
+
         const orderData = {
             userId,
-            items,
+            items: verifiedItems,
             address,
-            amount,
+            amount: calculatedAmount,
             paymentMethod: "Stripe",
             payment: false,
             date: Date.now()
@@ -51,7 +90,7 @@ const placeOrderStripe = async (req, res) => {
         const newOrder = new orderModel(orderData);
         await newOrder.save();
          
-        const line_items = items.map((item) => ({
+        const line_items = verifiedItems.map((item) => ({
             price_data: {
                 currency:currency,
                 product_data: {
