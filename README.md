@@ -112,3 +112,4 @@ Runs at `http://localhost:5174`.
 
 ## 📄 License
 This project is licensed under the ISC License.
+
