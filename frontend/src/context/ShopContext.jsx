@@ -7,16 +7,45 @@ export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
 
-    const currency = '$';
-    const delivery_fee = 10;
+    const currency = 'Rs. ';
+    const delivery_fee = 200;
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
-    console.log('backendUrl:', backendUrl);
     const [search, setSearch] = useState('');
     const [showSearch, setShowSearch] = useState(false);
     const [cartItems, setCartItems] = useState({});
     const [products, setProducts] = useState([]);
     const [token, setToken] = useState('');
     const navigate = useNavigate();
+
+    // Axios interceptor for automatic session expiry handling
+    useEffect(() => {
+        const interceptor = axios.interceptors.response.use(
+            (response) => {
+                if (response.data && response.data.message === "Not Authorized, please Login") {
+                    localStorage.removeItem('token');
+                    setToken('');
+                    setCartItems({});
+                    toast.error('Session expired. Please log in again.');
+                    navigate('/login');
+                }
+                return response;
+            },
+            (error) => {
+                if (error.response && error.response.status === 401) {
+                    localStorage.removeItem('token');
+                    setToken('');
+                    setCartItems({});
+                    toast.error('Session expired. Please log in again.');
+                    navigate('/login');
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
+    }, []);
 
     const addToCart = async (itemId, size) => {
 

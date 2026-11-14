@@ -86,6 +86,9 @@ const Product = () => {
 
   const reviewCount = productData?.reviews?.length || 0;
   const avgRating = productData?.averageRating || 0;
+  const productSizes = (productData?.sizes && productData.sizes.length > 0)
+    ? productData.sizes
+    : ['S', 'M', 'L', 'XL'];
 
   return productData ? (
     <div className='border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100'>
@@ -116,11 +119,22 @@ const Product = () => {
           <p className='mt-5 text-3xl font-medium'>{currency}{productData.price}</p>
           <p className='mt-5 text-gray-500 md:w-4/5'>{productData.description}</p>
           <div className='flex flex-col gap-4 my-8'>
-            <p>Select Size</p>
-            <div className='flex gap-2'>
+            <p className='font-medium text-gray-700'>Select Size</p>
+            <div className='flex flex-wrap gap-2'>
               {
-                productData.sizes && productData.sizes.map((item, index) => (
-                  <button onClick={()=>setSize(item)} className={`border py-2 px-4 bg-gray-100 ${item === size ? 'border-orange-500' : ''}`} key={index}>{item}</button>
+                productSizes.map((item, index) => (
+                  <button
+                    type="button"
+                    key={index}
+                    onClick={()=>setSize(item)}
+                    className={`border py-2 px-4 text-sm font-medium transition cursor-pointer ${
+                      item === size
+                        ? 'border-orange-500 bg-orange-50 text-orange-600 font-bold'
+                        : 'border-gray-300 bg-gray-50 text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    {item}
+                  </button>
                 ))
               }
             </div>

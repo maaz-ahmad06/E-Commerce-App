@@ -36,7 +36,8 @@ const Add = ({token}) => {
       formData.append('category', category);
       formData.append('subCategory', subCategory);
       formData.append('bestseller', bestseller);
-      formData.append('sizes', JSON.stringify(sizes));
+      const selectedSizes = sizes.length > 0 ? sizes : ["S", "M", "L", "XL"];
+      formData.append('sizes', JSON.stringify(selectedSizes));
 
       image1 && formData.append('image1', image1);
       image2 && formData.append('image2', image2);
