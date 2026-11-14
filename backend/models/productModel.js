@@ -9,6 +9,16 @@ const productSchema = new mongoose.Schema({
     subCategory: {type: String, required: true},
     sizes: {type: Array, required: true},
     bestseller: {type: Boolean},
+    reviews: [
+        {
+            userId: {type: String, required: true},
+            userName: {type: String, required: true},
+            rating: {type: Number, required: true},
+            comment: {type: String, required: true},
+            date: {type: Number, required: true}
+        }
+    ],
+    averageRating: {type: Number, default: 0},
     date: {type: Number, required: true},
 })
 

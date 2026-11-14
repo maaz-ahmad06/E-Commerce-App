@@ -17,6 +17,7 @@ const Footer = () => {
                 <li>About us</li>
                 <li>Delivery</li>
                 <li>Privacy Policy</li>
+                <li><a href='http://localhost:5174' target='_blank' rel='noopener noreferrer' className='text-black font-medium hover:underline'>Admin Portal ↗</a></li>
             </ul>
         </div>
 

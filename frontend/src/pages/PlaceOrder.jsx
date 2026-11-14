@@ -9,6 +9,7 @@ import { toast } from 'react-toastify'
 const Placeorder = () => {
 
   const [method, setMethod] = useState('cod');
+  const [transactionId, setTransactionId] = useState('');
   const {navigate, backendUrl, token, cartItems, setCartItems, getCartAmount, delivery_fee, products} = useContext(ShopContext);
 
   const [formData, setFormData] = useState({
@@ -77,8 +78,29 @@ const Placeorder = () => {
           }
           break;
         
-        case 'razorpay':
-          toast.info('Razorpay payment method is currently disabled. Please use COD or Stripe.');
+        case 'jazzcash':
+        case 'easypaisa':
+        case 'bank':
+          if (!transactionId.trim()) {
+            toast.error('Please enter your Transaction ID (TID) / Reference number.');
+            return;
+          }
+          const responsePak = await axios.post(
+            backendUrl + '/api/order/pakistani-pay',
+            {
+              ...orderData,
+              paymentMethod: method === 'jazzcash' ? 'JazzCash' : method === 'easypaisa' ? 'EasyPaisa' : 'Bank Transfer',
+              transactionId
+            },
+            { headers: { token } }
+          );
+          if (responsePak.data.success) {
+            toast.success(responsePak.data.message);
+            setCartItems({});
+            navigate('/orders');
+          } else {
+            toast.error(responsePak.data.message);
+          }
           break;
 
         default:
@@ -121,19 +143,45 @@ const Placeorder = () => {
         <div className='mt-12'>
           <Title text1={'PAYMENT'} text2={'METHOD'}/>
           {/* payment method selection */}
-          <div className='flex flex-col gap-3 lg:flex-row'>
-            <div onClick={()=>setMethod('stripe')} className='flex items-center gap-3 border border-gray-300 p-2 px-3 cursor-pointer'>
-              <p className={`min-w-3.5 h-3.5 border border-gray-300 rounded-full ${method === 'stripe' ? 'bg-green-400' : ''}`}></p>
-              <img className='h-5 mx-4' src={assets.stripe_logo} alt="" />
+          <div className='flex flex-col gap-3'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              <div onClick={()=>setMethod('cod')} className='flex items-center gap-3 border border-gray-300 p-2.5 px-3 cursor-pointer hover:border-black transition'>
+                <p className={`min-w-3.5 h-3.5 border border-gray-300 rounded-full ${method === 'cod' ? 'bg-green-500' : ''}`}></p>
+                <p className='text-gray-700 text-xs sm:text-sm font-medium'>CASH ON DELIVERY (COD)</p>
+              </div>
+              <div onClick={()=>setMethod('jazzcash')} className='flex items-center gap-3 border border-gray-300 p-2.5 px-3 cursor-pointer hover:border-black transition'>
+                <p className={`min-w-3.5 h-3.5 border border-gray-300 rounded-full ${method === 'jazzcash' ? 'bg-green-500' : ''}`}></p>
+                <span className='font-bold text-red-600 text-sm'>JazzCash</span>
+              </div>
+              <div onClick={()=>setMethod('easypaisa')} className='flex items-center gap-3 border border-gray-300 p-2.5 px-3 cursor-pointer hover:border-black transition'>
+                <p className={`min-w-3.5 h-3.5 border border-gray-300 rounded-full ${method === 'easypaisa' ? 'bg-green-500' : ''}`}></p>
+                <span className='font-bold text-green-600 text-sm'>EasyPaisa</span>
+              </div>
+              <div onClick={()=>setMethod('stripe')} className='flex items-center gap-3 border border-gray-300 p-2.5 px-3 cursor-pointer hover:border-black transition'>
+                <p className={`min-w-3.5 h-3.5 border border-gray-300 rounded-full ${method === 'stripe' ? 'bg-green-500' : ''}`}></p>
+                <img className='h-5' src={assets.stripe_logo} alt="Stripe" />
+              </div>
             </div>
-            <div onClick={()=>setMethod('razorpay')} className='flex items-center gap-3 border border-gray-300 p-2 px-3 cursor-pointer'>
-              <p className={`min-w-3.5 h-3.5 border border-gray-300 rounded-full ${method === 'razorpay' ? 'bg-green-400' : ''}`}></p>
-              <img className='h-5 mx-4' src={assets.razorpay_logo} alt="" />
-            </div>
-            <div onClick={()=>setMethod('cod')} className='flex items-center gap-3 border border-gray-300 p-2 px-3 cursor-pointer'>
-              <p className={`min-w-3.5 h-3.5 border border-gray-300 rounded-full ${method === 'cod' ? 'bg-green-400' : ''}`}></p>
-              <p className='text-gray-500 text-sm font-medium mx-4'>CASH ON DELIVERY</p>
-            </div>
+
+            {/* Pakistani Mobile Wallet Instructions */}
+            {(method === 'jazzcash' || method === 'easypaisa') && (
+              <div className='mt-3 p-4 bg-gray-50 border border-gray-300 rounded text-xs sm:text-sm text-gray-700 leading-relaxed'>
+                <p className='font-semibold text-black mb-1'>
+                  Send Total Payment via {method === 'jazzcash' ? 'JazzCash' : 'EasyPaisa'}:
+                </p>
+                <p>• Account Number: <span className='font-bold text-black'>0300-1234567</span></p>
+                <p>• Account Title: <span className='font-bold text-black'>Muhammad Maaz</span></p>
+                <p className='text-gray-500 mt-1 mb-2'>After sending payment, enter your Transaction ID (TID) below:</p>
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter Transaction ID (TID) / Sender Number"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:border-black"
+                />
+              </div>
+            )}
           </div>
           <div className='w-full text-end mt-8'>
             <button type='submit' className='bg-black text-white px-16 py-3 text-sm'>PLACE ORDER</button>

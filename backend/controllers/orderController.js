@@ -165,9 +165,48 @@ const verifyStripe = async (req, res) => {
     }
 }
 
-// Placing orders using Razorpay method
-const placeOrderRazorpay = async (req, res) => {
-    res.json({success: false, message: "Razorpay payment method is currently not configured"});
+// Placing orders using Pakistani Payment Methods (JazzCash / EasyPaisa / Bank Transfer)
+const placeOrderPakistani = async (req, res) => {
+    try {
+        const {userId, items, address, paymentMethod, transactionId} = req.body;
+
+        let calculatedAmount = 0;
+        const verifiedItems = [];
+        for (const item of items) {
+            const product = await productModel.findById(item._id);
+            if (product) {
+                calculatedAmount += product.price * item.quantity;
+                verifiedItems.push({
+                    ...item,
+                    price: product.price,
+                    name: product.name
+                });
+            } else {
+                verifiedItems.push(item);
+                calculatedAmount += (item.price || 0) * (item.quantity || 1);
+            }
+        }
+        calculatedAmount += deliveryCharge;
+
+        const orderData = {
+            userId,
+            items: verifiedItems,
+            address,
+            amount: calculatedAmount,
+            paymentMethod: paymentMethod || "JazzCash",
+            payment: false,
+            transactionId: transactionId || '',
+            date: Date.now()
+        }
+
+        const newOrder = new orderModel(orderData);
+        await newOrder.save();
+        await userModel.findByIdAndUpdate(userId, {cartData: {}});
+        res.json({success: true, message: "Order placed successfully! We will verify your transaction shortly."});
+
+    } catch (error) {
+        res.json({success: false, message: error.message});
+    }
 }
 
 // All order data for Admin Panel
@@ -203,4 +242,50 @@ const updateStatus = async (req, res) => {
     }
 }
 
-export {verifyStripe, placeOrder, placeOrderStripe, placeOrderRazorpay, allOrders, userOrders, updateStatus}
+// update payment status from Admin Panel
+const updatePayment = async (req, res) => {
+    try {
+        const {orderId, payment} = req.body;
+        await orderModel.findByIdAndUpdate(orderId, {payment});
+        res.json({success: true, message: "Payment status updated successfully"});
+    } catch (error) {
+        res.json({success: false, message: error.message});
+    }
+}
+
+// Get admin dashboard stats
+const getDashboardStats = async (req, res) => {
+    try {
+        const orders = await orderModel.find({});
+        const totalOrders = orders.length;
+        const totalSales = orders.reduce((acc, order) => acc + (order.payment ? order.amount : 0), 0);
+        const pendingOrders = orders.filter(o => o.status !== "Delivered").length;
+        const deliveredOrders = orders.filter(o => o.status === "Delivered").length;
+        const recentOrders = orders.slice(-6).reverse();
+
+        res.json({
+            success: true,
+            stats: {
+                totalOrders,
+                totalSales,
+                pendingOrders,
+                deliveredOrders,
+                recentOrders
+            }
+        });
+    } catch (error) {
+        res.json({success: false, message: error.message});
+    }
+}
+
+export {
+    verifyStripe,
+    placeOrder,
+    placeOrderStripe,
+    placeOrderPakistani,
+    allOrders,
+    userOrders,
+    updateStatus,
+    updatePayment,
+    getDashboardStats
+}

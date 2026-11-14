@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from 'fs';
 import productModel from '../models/productModel.js'
+import userModel from '../models/userModel.js'
 
 // function for add product
 const addProduct = async (req, res) => {
@@ -78,4 +79,45 @@ const singleProduct = async (req, res) => {
     }
 }
 
-export { addProduct, listProducts, removeProduct, singleProduct }
+// function for adding a review
+const addReview = async (req, res) => {
+    try {
+        const { userId, productId, rating, comment } = req.body;
+
+        if (!rating || !comment) {
+            return res.json({ success: false, message: "Rating and comment are required" });
+        }
+
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
+        }
+
+        const product = await productModel.findById(productId);
+        if (!product) {
+            return res.json({ success: false, message: "Product not found" });
+        }
+
+        const newReview = {
+            userId,
+            userName: user.name || "Customer",
+            rating: Number(rating),
+            comment,
+            date: Date.now()
+        };
+
+        product.reviews = product.reviews || [];
+        product.reviews.push(newReview);
+
+        const totalRating = product.reviews.reduce((acc, item) => acc + item.rating, 0);
+        product.averageRating = Number((totalRating / product.reviews.length).toFixed(1));
+
+        await product.save();
+        res.json({ success: true, message: "Review submitted successfully!", product });
+
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+}
+
+export { addProduct, listProducts, removeProduct, singleProduct, addReview }

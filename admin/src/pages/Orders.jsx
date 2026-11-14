@@ -39,6 +39,20 @@ const Orders = ({token}) => {
     }
   }
 
+  const paymentHandler = async (orderId, paymentStatus) => {
+    try {
+      const response = await axios.post(backendUrl + '/api/order/payment-status', {orderId, payment: paymentStatus}, {headers:{token}})
+      if(response.data.success){
+        toast.success(response.data.message);
+        await fatchAllOrders();
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  }
+
   useEffect(() => {
     fatchAllOrders();
   }, [token])
@@ -77,9 +91,20 @@ const Orders = ({token}) => {
               </div>
               <div>
                 <p className='text-sm sm:text-[15px]'>Items : {order.items.length}</p>
-                <p className='mt-3'>Method : {order.paymentMethod}</p>
-                <p>Payment : { order.payment ? 'Done' : 'Pending' }</p>
-                <p>Date : {new Date(order.date).toLocaleDateString()}</p>
+                <p className='mt-2'>Method : <span className='font-semibold'>{order.paymentMethod}</span></p>
+                {order.transactionId && <p className='text-xs text-blue-600 font-mono font-medium'>TID: {order.transactionId}</p>}
+                <div className='flex items-center gap-2 mt-2'>
+                  <p className='text-xs'>Payment:</p>
+                  <select
+                    value={order.payment ? 'true' : 'false'}
+                    onChange={(e) => paymentHandler(order._id, e.target.value === 'true')}
+                    className={`text-xs px-2 py-0.5 font-semibold rounded border cursor-pointer ${order.payment ? 'bg-green-100 text-green-700 border-green-300' : 'bg-amber-100 text-amber-700 border-amber-300'}`}
+                  >
+                    <option value="false">Pending</option>
+                    <option value="true">Done</option>
+                  </select>
+                </div>
+                <p className='mt-2 text-xs text-gray-500'>Date : {new Date(order.date).toLocaleDateString()}</p>
               </div>
               <p className='text-sm sm:text-[15px]'>{currency}{order.amount}</p>
               <select onChange={(event)=>statusHandler(event,order._id)} value={order.status} className='p-2 font-semibold'>

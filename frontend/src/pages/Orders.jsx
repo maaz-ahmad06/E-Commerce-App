@@ -22,6 +22,7 @@ const Orders = () => {
             item['status'] = order.status;
             item['payment'] = order.payment;
             item['paymentMethod'] = order.paymentMethod;
+            item['transactionId'] = order.transactionId;
             item['date'] = order.date;
             allOrdersItem.push(item);
           })
@@ -56,7 +57,8 @@ const Orders = () => {
                     <p>Size: {item.size}</p>
                   </div>
                   <p className='mt-1'>Date: <span className='text-gray-400'>{new Date(item.date).toDateString()}</span></p>
-                  <p className='mt-1'>Payment: <span className='text-gray-400'>{item.paymentMethod}</span></p>
+                  <p className='mt-1'>Payment: <span className='text-gray-600 font-medium'>{item.paymentMethod}</span> ({item.payment ? <span className='text-green-600 font-semibold'>Paid</span> : <span className='text-amber-600 font-semibold'>Pending</span>})</p>
+                  {item.transactionId && <p className='text-xs text-gray-500'>TID: <span className='font-mono'>{item.transactionId}</span></p>}
                 </div>
               </div>
               <div className='md:w-1/2 flex justify-between'>

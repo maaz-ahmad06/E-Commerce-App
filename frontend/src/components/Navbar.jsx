@@ -40,7 +40,17 @@ const Navbar = () => {
         </NavLink>
       </ul>
 
-      <div className='flex items-center gap-6'>
+      <div className='flex items-center gap-4 sm:gap-6'>
+        <a
+          href='http://localhost:5174'
+          target='_blank'
+          rel='noopener noreferrer'
+          className='hidden md:flex items-center gap-1 text-xs font-medium border border-gray-300 hover:border-black text-gray-700 hover:text-black px-3 py-1 rounded-full transition'
+          title='Open Admin Dashboard'
+        >
+          <span>Admin</span>
+          <span className='text-[10px]'>↗</span>
+        </a>
         <img onClick={()=>{
           setShowSearch(true);
           if(!location.pathname.includes('/collection')){
@@ -51,11 +61,13 @@ const Navbar = () => {
           <img onClick={()=> token ? null : navigate('/login')} src={assets.profile_icon} className='w-5 cursor-pointer' alt="" />
           {/* Dropdown menu */}
           {token &&
-          <div className='group-hover:block hidden absolute dropdown-menu right-0 pt-4'>
-            <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded'>
-              <p className='cursor-pointer hover:text-black'>My Profile</p>
+          <div className='group-hover:block hidden absolute dropdown-menu right-0 pt-4 z-20'>
+            <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded shadow-md text-sm'>
+              <p onClick={()=>navigate('/profile')} className='cursor-pointer hover:text-black'>My Profile</p>
               <p onClick={()=>navigate('/orders')} className='cursor-pointer hover:text-black'>Orders</p>
-              <p onClick={logout} className='cursor-pointer hover:text-black'>Logout</p>
+              <a href='http://localhost:5174' target='_blank' rel='noopener noreferrer' className='cursor-pointer hover:text-black text-xs text-blue-600 font-medium'>Admin Panel ↗</a>
+              <hr className='border-gray-200' />
+              <p onClick={logout} className='cursor-pointer hover:text-black text-red-600'>Logout</p>
             </div>
           </div>}
           
@@ -78,6 +90,7 @@ const Navbar = () => {
           <NavLink onClick={()=>setVisible(false)} className='py-2 pl-6 border' to='/collection'>COLLECTION</NavLink>
           <NavLink onClick={()=>setVisible(false)} className='py-2 pl-6 border' to='/contact'>CONTACT</NavLink>
           <NavLink onClick={()=>setVisible(false)} className='py-2 pl-6 border' to='/about'>ABOUT</NavLink>
+          <a onClick={()=>setVisible(false)} href='http://localhost:5174' target='_blank' rel='noopener noreferrer' className='py-2 pl-6 border text-blue-600 font-medium bg-gray-50'>ADMIN PANEL ↗</a>
         </div>
       </div>
 
