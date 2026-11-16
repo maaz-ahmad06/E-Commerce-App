@@ -7,6 +7,7 @@ const Navbar = () => {
 
   const [visible, setVisible] = useState(false);
   const location = useLocation();
+  const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174';
   const {setShowSearch, getCartCount,navigate,token,setToken,setCartItems} = useContext(ShopContext);
 
   const logout = () => {
@@ -42,7 +43,7 @@ const Navbar = () => {
 
       <div className='flex items-center gap-4 sm:gap-6'>
         <a
-          href='http://localhost:5174'
+          href={adminUrl}
           className='hidden md:flex items-center gap-1 text-xs font-medium border border-gray-300 hover:border-black text-gray-700 hover:text-black px-3 py-1 rounded-full transition'
           title='Open Admin Dashboard'
         >
@@ -63,7 +64,7 @@ const Navbar = () => {
             <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded shadow-md text-sm'>
               <p onClick={()=>navigate('/profile')} className='cursor-pointer hover:text-black'>My Profile</p>
               <p onClick={()=>navigate('/orders')} className='cursor-pointer hover:text-black'>Orders</p>
-              <a href='http://localhost:5174' className='cursor-pointer hover:text-black text-xs text-blue-600 font-medium'>Admin Panel →</a>
+              <a href={adminUrl} className='cursor-pointer hover:text-black text-xs text-blue-600 font-medium'>Admin Panel →</a>
               <hr className='border-gray-200' />
               <p onClick={logout} className='cursor-pointer hover:text-black text-red-600'>Logout</p>
             </div>
@@ -88,7 +89,7 @@ const Navbar = () => {
           <NavLink onClick={()=>setVisible(false)} className='py-2 pl-6 border' to='/collection'>COLLECTION</NavLink>
           <NavLink onClick={()=>setVisible(false)} className='py-2 pl-6 border' to='/contact'>CONTACT</NavLink>
           <NavLink onClick={()=>setVisible(false)} className='py-2 pl-6 border' to='/about'>ABOUT</NavLink>
-          <a onClick={()=>setVisible(false)} href='http://localhost:5174' className='py-2 pl-6 border text-blue-600 font-medium bg-gray-50'>ADMIN PANEL →</a>
+          <a onClick={()=>setVisible(false)} href={adminUrl} className='py-2 pl-6 border text-blue-600 font-medium bg-gray-50'>ADMIN PANEL →</a>
         </div>
       </div>
 

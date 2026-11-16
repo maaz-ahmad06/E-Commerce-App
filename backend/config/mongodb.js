@@ -1,17 +1,23 @@
 import mongoose from "mongoose";
 
+let isConnected = false;
+
 const connectDB = async () => {
+    if (mongoose.connection.readyState >= 1) {
+        return;
+    }
 
-    mongoose.connection.on('connected', () => {
-        console.log("Connected to MongoDB");
-    })
-
-    mongoose.connection.on('error', (err) => {
-        console.error("MongoDB connection error:", err.message);
-    })
-    
     try {
-        await mongoose.connect(`${process.env.MONGODB_URI}/e-commerce`);
+        let uri = process.env.MONGODB_URI || "";
+        if (!uri.includes('/e-commerce') && !uri.match(/mongodb\.net\/[^?]+/)) {
+            if (uri.includes('?')) {
+                uri = uri.replace('?', '/e-commerce?');
+            } else {
+                uri = uri.endsWith('/') ? `${uri}e-commerce` : `${uri}/e-commerce`;
+            }
+        }
+        await mongoose.connect(uri);
+        console.log("Connected to MongoDB");
     } catch (error) {
         console.error("Failed to connect to MongoDB:", error.message);
     }

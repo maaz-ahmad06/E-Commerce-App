@@ -17,7 +17,7 @@ const Footer = () => {
                 <li>About us</li>
                 <li>Delivery</li>
                 <li>Privacy Policy</li>
-                <li><a href='http://localhost:5174' className='text-black font-medium hover:underline'>Admin Portal →</a></li>
+                <li><a href={import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'} className='text-black font-medium hover:underline'>Admin Portal →</a></li>
             </ul>
         </div>
 
